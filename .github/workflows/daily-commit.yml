@@ -1,0 +1,38 @@
+name: Daily Commit
+
+on:
+  schedule:
+    # Runs every day at 02:30 UTC. (Specific minute/hour required — change if you want.)
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Daily update by 23f2005036@ds.study.iitm.ac.in
+        run: |
+          # Always create a real change so commit will occur
+          echo "Daily update: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> daily_log.txt
+          tail -n 5 daily_log.txt || true
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add daily_log.txt
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Daily auto-commit: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            git push
+          fi
